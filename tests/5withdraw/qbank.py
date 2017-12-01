@@ -43,6 +43,7 @@ def main():
                         deleteacct(accList)
                     elif agentMenu == 'd' or agentMenu == 'D':
                         deposit(accList, mode, transList)
+
                     elif agentMenu == 'w' or agentMenu == 'W':
                         withdraw(accList, mode, transList)
                     elif agentMenu == 't' or agentMenu == 'T':
@@ -53,7 +54,8 @@ def main():
                         mainFlag = False
                     else:
                         print("Incorrect input. Try again")
-
+        else:
+            print("invalid login")
     with open('accounts.txt', 'w') as accounts:
         for i in accList:
             accounts.write(str(i) + "\n")
@@ -175,7 +177,7 @@ def deleteacct(accountList):
 #After successfully passing both tests, method returns transaction file appended
 #to original file translist file with updated deposit details
 #translist as output
-def deposit(accntList, mde, transList):
+def deposit(accntList,mode, transList): #POS TESTS WORKING, NEG NEEDS FORMATTING - Txt file
     validAcc = False
     validDep = False
     while validAcc == False:
@@ -184,21 +186,74 @@ def deposit(accntList, mde, transList):
             validAcc = True
         else:
             print("Invalid account number, please try again.")
-            
-    while validDep == False:
-        depAmount = int(input("Deposit Amount (including cents): "))
-        if mde == 'm' or mde == 'M':
-            if depAmount <= 100000 and depAmount >= 0:
-                validDep = True
-                return transList.append("DEP "+ accNum+ " " + str(depAmount) + " " + "0000000 " + " *")
-            else:
-                print("Invalid deposit amount!")
-        elif mde == 'a' or mde == 'A':
-            if depAmount <= 99999999 and depAmount >= 0:
-                validDep = True
-                return transList.append("DEP "+ accNum+ " " + str(depAmount) + " " + "0000000 " + " *")
-            else:
-                print("Invalid deposit amount!")
+            continue
+    completeDep = False
+    totalDep = 0
+    while completeDep == False:
+        depAmount = input("Deposit Amount (including cents): ")
+        notNumber = False
+        try:#numeric test
+            int(depAmount)
+        except ValueError:
+            print("Please enter a valid account number")
+            notNumber = True
+        if notNumber == True:
+            return
+        else:
+            if mode == 'm' or mode == 'M':
+                if len(str(depAmount))<3:#neg testing
+                    print("Invalid deposit amount!")
+                    continue
+                elif depAmount < 0:
+                    print("Invalid deposit amount")
+                    continue
+                elif depAmount > 100000:
+                    print("Invalid deposit amount")
+                    continue
+                elif depAmount <= 100000 and depAmount >= 0:#positive testing
+                    totalDep += depAmount
+                    validDep = True
+                    complete = input("Enter 1 to complete deposit, Enter 2 to add another deposit")
+                    if complete == '1':
+                        if totalDep < 100000 and totalDep>0:#pos test
+                            return transList.append("DEP "+ str(accNum)+ " " + str(totalDep) + " " + "0000000 " + " *")
+                            completeDep = True
+                        else: # neg test
+                            print("Invalid total deposit amount")
+                            return
+                    elif complete == '2':
+                        continue
+                    else:
+                        print("Invalid input")
+                        continue
+                
+            elif mode == 'a' or mode == 'A':  
+                if depAmount > 99999999:
+                    print("Invalid deposit amount!")
+                    continue
+                elif len(str(depAmount))<3:#neg testing
+                    print("Invalid deposit amount!")
+                    continue
+                elif depAmount < 0:
+                    print("Invalid deposit amount")
+                    continue
+                elif depAmount <= 99999999 and depAmount >= 0: #positive testing
+                    totalDep += depAmount
+                    validDep = True
+                    complete = input("Enter 1 to complete deposit, Enter 2 to add another deposit")
+                    if complete == '1':
+                        if totalDep > 99999999 and totalDep < 0:#pos test
+                            return transList.append("DEP "+ str(accNum)+ " " + str(totalDep) + " " + "0000000 " + " *")    
+                            completeDep = True  
+                        else: # neg test
+                            print("Invalid total deposit amount")
+                            
+                            return
+                    elif complete == '2':
+                        continue
+                    else:
+                        print("Invalid input")
+                        continue
 
 #Withdraw method, takes account list and account mode as inputs
 #Method checks to see if the account is valid, after acceptance checks to see
@@ -206,7 +261,7 @@ def deposit(accntList, mde, transList):
 #After successfully passing both tests, method returns transaction file appended
 #to original file translist file with updated withdraw details
 #translist as output
-def withdraw(accntList, mde, transList):
+def withdraw(accntList,mode, transList):
     validAcc = False
     validWith = False
     while validAcc == False:
@@ -215,20 +270,76 @@ def withdraw(accntList, mde, transList):
             validAcc = True
         else:
             print("Invalid account number, please try again")
-    while validWith == False:
+    completeWith = False
+    totalWith = 0
+    while completeWith == False:
         withAmt = int(input("Withdraw Amount (including cents): "))
-        if mde == 'm' or mde == 'M':
-            if withAmt <= 100000 and withAmt >= 0:
-                validWith = True
-                return transList.append("WDR "+ accNum+ " " + str(withAmt) + " " + "0000000 " + " *")
+        notNumber = False
+        try:
+            int(depAmount)
+        except ValueError:
+            print("Please enter a valid account number")
+            notNumber = True
+        if notNumber == True:
+            return
+        else:
+            if mode == 'm' or mode == 'M':
+                if withAmt < 0:
+                    print("Invalid Withdraw amount, < 0")
+                    continue
+                elif len(withAmt) < 3:
+                    print("Invalid withdraw amount, < 3 characters")
+                    continue
+                elif withAmt > 100000:
+                    print("Invalid withdraw amount, > $1000 limit")
+                    continue
+                elif withAmt <= 100000 and withAmt >= 0:#positive testing
+                    validWith = True
+                    totalWith += withAmt
+                    complete = input("Enter 1 to complete deposit, Enter 2 to add another deposit")
+                    if complete == '1':
+                        if totalWith < 100000 and totalWith > 0:#positie testing
+                            return transList.append("WDR "+ str(accNum)+ " " + str(totalWith) + " " + "0000000 " + " *")
+                            completeWith = True
+                        else:
+                            print("Invalid total withdraw amount")
+                            continue
+                    elif complete == '2':
+                        continue
+                    else:
+                        print("Invalid input")
+                        continue 
+            
+                
+            elif mode == 'a' or mode == 'A': 
+                #test if withdrawing <$1000 in single session multiple transactions- positive
+                if withAmt > 99999999:
+                    print("Invalid Withdraw amount, > maximum ($999,999.99)")
+                    continue
+                elif withAmt < 0:
+                    print("Invalid Withdraw amount, < minimum ($0)")
+                    continue
+                elif len(withAmt) < 3:
+                    print("Invalid withdraw amount, < 3 characters")
+                    continue
+                elif withAmt <= 99999999 and withAmt >= 0:#positive testing
+                    validWith = True
+                    totalWith += withAmt
+                    complete = input("Enter 1 to complete deposit, Enter 2 to add another deposit")
+                    if complete == '1':
+                        if totalWith < 99999999:#positie testing
+                            return transList.append("WDR "+ str(accNum)+ " " + str(totalWith) + " " + "0000000 " + " *")
+                            completeWith = True
+                        else:
+                            print("Invalid total withdraw amount")
+                            continue
+                    elif complete == '2':
+                        continue
+                    else:
+                        print("Invalid input")
+                        continue
             else:
-                print("Invalid Withdraw amount, please try again")
-        elif mde == 'a' or mde == 'A':
-            if withAmt <= 99999999 and withAmt >= 0:
-                validWith = True
-                return transList.append("WDR "+ accNum+ " " + str(withAmt) + " " + "0000000 " + " *")
-            else:
-                print("Invalid Withdraw amount, please try again")
+                print("Error, invalid input")
 
 def transfer(transList, accountList, currentMode):
     #transfer from one account to another
@@ -261,7 +372,7 @@ def transfer(transList, accountList, currentMode):
                     print("Invalid amount. Please enter a value from $0 to $999 999.99")
 
         else:
-            print("Wrong account number(s). Please try again")
+            print("Invalid account number(s). Please try again")
 
     transList.append(newTransaction)
     return transList
