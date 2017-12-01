@@ -38,9 +38,15 @@ def main():
                     #agent mode so all transactions are allowed
                     agentMenu = input("Press [CA] to create an account.\nPress [DA] to delete an account.\nPress [D] to deposit\nPress [W] to withdraw \nPress [T] to transfer\nPress [Q] to logout\n")
                     if agentMenu == 'ca' or agentMenu == 'CA':
-                        createacct(accList)
+                        createacct(accList, transList)
+                        logout(transList)
+                        flag = False
+                        mainFlag = False
                     elif agentMenu == 'da' or agentMenu == 'DA':
-                        deleteacct(accList)
+                        deleteacct(accList, transList)
+                        logout(transList)
+                        flag = False
+                        mainFlag = False
                     elif agentMenu == 'd' or agentMenu == 'D':
                         deposit(accList, mode, transList)
                     elif agentMenu == 'w' or agentMenu == 'W':
@@ -115,7 +121,7 @@ def login(accountList):
 
 #input = account list; output = new account list after creation
 #adds a new valid account into the valid account list
-def createacct(accountList): 
+def createacct(accountList, tFile): 
 
     notCreated = True
 
@@ -131,10 +137,10 @@ def createacct(accountList):
             if (newAccNam.isalpha() == True) and len(newAccNam) > 2 and len(newAccNam) < 31:
                 print("Created Succesfully")
                 #update the list (append to the front)
-                accountList = [int(newAccNum)] + accountList
+                accountList.insert(0, int(newAccNum))
+                tFile.append("NEW " + newAccNum + "000 0000000 " + newAccNam)
                 notCreated = False
-                print(accountList)
-                return accountList
+                #print(accountList)
             else:
                 print("The account name is not in a right format!\nPlease re-enter...")
 
@@ -145,9 +151,10 @@ def createacct(accountList):
 
 
 
+
 #input = account list; output = new account list after deletion
 #deletes an existing valid account from the valid account list
-def deleteacct(accountList):
+def deleteacct(accountList, tFile):
 
     notDeleted = True
 
@@ -161,9 +168,12 @@ def deleteacct(accountList):
             print("Account deleted.")
             notDeleted = False
             #update the list (delete from the list)
-            accountList = [x for x in accountList if x != int(delAccNum)]
-            print(accountList)
-            return accountList
+            #accountList = [x for x in accountList if x != int(delAccNum)]
+            accountList.remove(int(delAccNum))
+            tFile.append("DEL" + delAccNum + "000 0000000 Name")
+            #print for testing here
+            #print(accountList)
+            #return accountList
 
         else:
 
@@ -220,13 +230,13 @@ def withdraw(accntList, mde, transList):
         if mde == 'm' or mde == 'M':
             if withAmt <= 100000 and withAmt >= 0:
                 validWith = True
-                return transList.append("WDR "+ accNum+ " " + str(withAmt) + " " + "0000000 " + " *")
+                transList.append("WDR "+ accNum+ " " + str(withAmt) + " " + "0000000" + " *")
             else:
                 print("Invalid Withdraw amount, please try again")
         elif mde == 'a' or mde == 'A':
             if withAmt <= 99999999 and withAmt >= 0:
                 validWith = True
-                return transList.append("WDR "+ accNum+ " " + str(withAmt) + " " + "0000000 " + " *")
+                transList.append("WDR "+ accNum+ " " + str(withAmt) + " " + "0000000" + " *")
             else:
                 print("Invalid Withdraw amount, please try again")
 
@@ -247,14 +257,14 @@ def transfer(transList, accountList, currentMode):
         if (int(fromAcc) in accountList) and (int(toAcc) in accountList):
 
             if(currentMode == 'M'):
-                if(transAmount >= 0) and (transAmount <= 100000):
+                if(int(transAmount) >= 0) and (int(transAmount) <= 100000):
                     newTransaction = "XFR " + toAcc + " " + transAmount + " " + fromAcc + " " + "*"
                     confirmTrans == False
                 else:
                     print("Invalid amount. Please enter a value from $0 to $1000.00")
 
             else: #currentMode == 'A'
-                if(transAmount >= 0) and (transAmount <= 99999999):
+                if(int(transAmount) >= 0) and (int(transAmount) <= 99999999):
                     newTransaction = "XFR " + toAcc + " " + transAmount + " " + fromAcc + " " + "*"
                     confirmTrans == False
                 else:
@@ -262,9 +272,7 @@ def transfer(transList, accountList, currentMode):
 
         else:
             print("Wrong account number(s). Please try again")
-
     transList.append(newTransaction)
-    return transList
 
 def logout(transList):
     print("You have successfully logged out.")
